@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Soul Match</title>
+    <style>
+        :root {
+            --night: #0f172a;
+            --plum: #3b1f4a;
+            --rose: #e76f92;
+            --gold: #f6c667;
+            --mist: #f8f4ef;
+            --ink: #172033;
+            --card: rgba(255, 255, 255, 0.14);
+            --line: rgba(255, 255, 255, 0.22);
+            --shadow: 0 24px 55px rgba(8, 13, 28, 0.28);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "Trebuchet MS", "Segoe UI", sans-serif;
+            color: var(--mist);
+            background:
+                radial-gradient(circle at top left, rgba(103, 187, 246, 0.22), transparent 28%),
+                radial-gradient(circle at 85% 15%, rgba(249, 166, 189, 0.18), transparent 24%),
+                linear-gradient(135deg, #043ab1 0%, #526077 35%, #8b68b9 70%, #3714ff 100%);
+        }
+
+        body::before {
+            content: "";
+            position: fixed;
+            inset: 0;
+            pointer-events: none;
+            background-image:
+                linear-gradient(rgba(255, 255, 255, 0.05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(255, 255, 255, 0.04) 1px, transparent 1px);
+            background-size: 48px 48px;
+            mask-image: linear-gradient(to bottom, rgba(0, 0, 0, 0.8), transparent);
+        }
+
+        a {
+            color: inherit;
+        }
+
+        .page {
+            width: min(1100px, calc(100% - 2rem));
+            margin: 0 auto;
+            padding: 1.25rem 0 4rem;
+        }
+
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .toplink {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.55rem;
+            padding: 0.8rem 1.15rem;
+            text-decoration: none;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            backdrop-filter: blur(10px);
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1.1fr 0.9fr;
+            gap: 1.5rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .hero-copy,
+        .result-panel,
+        .mini-card,
+        .form-panel {
+            background: var(--card);
+            border: 1px solid var(--line);
+            border-radius: 28px;
+            backdrop-filter: blur(14px);
+            box-shadow: var(--shadow);
+        }
+
+        .hero-copy,
+        .result-panel,
+        .form-panel {
+            padding: 2rem;
+        }
+
+        .eyebrow,
+        .result-tag {
+            display: inline-block;
+            padding: 0.45rem 0.8rem;
+            border-radius: 999px;
+            color: var(--gold);
+            background: rgba(246, 198, 103, 0.12);
+            font-size: 0.82rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+        }
+
+        h1 {
+            margin: 1rem 0;
+            font-family: Georgia, serif;
+            font-size: clamp(2.6rem, 5vw, 4.7rem);
+            line-height: 0.95;
+        }
+
+        h2, h3 {
+            font-family: Georgia, serif;
+        }
+
+        .sparkle {
+            color: var(--gold);
+        }
+
+        .hero-copy p,
+        .section-copy,
+        .mini-card p,
+        .result-meta {
+            color: rgba(248, 244, 239, 0.88);
+            line-height: 1.7;
+        }
+
+        .app-shell {
+            display: grid;
+            grid-template-columns: 0.95fr 1.05fr;
+            gap: 1.5rem;
+            align-items: start;
+        }
+
+        label {
+            display: block;
+            margin: 1rem 0 0.45rem;
+            font-weight: 700;
+            color: var(--gold);
+        }
+
+        input,
+        textarea {
+            width: 100%;
+            padding: 0.95rem 1rem;
+            border-radius: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.14);
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--mist);
+            font: inherit;
+        }
+
+        textarea {
+            min-height: 108px;
+            resize: vertical;
+        }
+
+        .tone-row,
+        .button-row {
+            display: flex;
+            gap: 0.75rem;
+            flex-wrap: wrap;
+        }
+
+        .tone-button,
+        .submit-button,
+        .surprise-button {
+            border: 0;
+            border-radius: 999px;
+            font: inherit;
+            cursor: pointer;
+            padding: 0.9rem 1.25rem;
+        }
+
+        .tone-button {
+            background: rgba(255, 255, 255, 0.09);
+            color: var(--mist);
+            border: 1px solid transparent;
+        }
+
+        .tone-button.active {
+            background: rgba(246, 198, 103, 0.16);
+            border-color: rgba(246, 198, 103, 0.5);
+            color: var(--gold);
+        }
+
+        .submit-button {
+            background: linear-gradient(135deg, var(--gold), #ef9f55);
+            color: var(--ink);
+            font-weight: 800;
+        }
+
+        .surprise-button {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--mist);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+        }
+
+        .result-block {
+            margin-top: 1.2rem;
+            padding: 1rem 1.1rem;
+            border-radius: 20px;
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid rgba(255, 255, 255, 0.09);
+        }
+
+        .result-label {
+            display: block;
+            margin-bottom: 0.4rem;
+            color: var(--gold);
+            font-weight: 700;
+            text-transform: uppercase;
+            font-size: 0.84rem;
+            letter-spacing: 0.08em;
+        }
+
+        blockquote {
+            margin: 0;
+            font-family: Georgia, serif;
+            font-size: 1.15rem;
+            line-height: 1.7;
+            color: #fff3cf;
+        }
+
+        .mini-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .mini-card {
+            padding: 1.2rem;
+        }
+
+        @media (max-width: 900px) {
+            .hero,
+            .app-shell,
+            .mini-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="page">
+        <div class="topbar">
+            <a class="toplink" href="fromscratch.html">&larr; Back to Movie List</a>
+            <a class="toplink" href="index.html">Resume</a>
+        </div>
+
+        <section class="hero">
+            <div class="hero-copy">
+                <span class="eyebrow">Movie Soul Match</span>
+                <h1>Tell me your mood. <span class="sparkle">I&apos;ll match your movie soul.</span></h1>
+                <p>Pick the emotional weather of your day, add an optional vibe, and this app will pair you with a movie, explain the fit, pull a quote, and suggest a companion watch.</p>
+            </div>
+
+            <div class="result-panel">
+                <span class="result-tag">Tonight&apos;s Match</span>
+                <h2 class="result-title" id="movieTitle">About Time</h2>
+                <p class="result-meta" id="movieMeta">Romance | Sci-fi | Comforting</p>
+
+                <div class="result-block">
+                    <span class="result-label">Why This Fits</span>
+                    <p id="movieWhy">When life feels noisy, this movie slows the heart down and reminds you that ordinary days can still glow.</p>
+                </div>
+
+                <div class="result-block">
+                    <span class="result-label">Quote</span>
+                    <blockquote id="movieQuote">&quot;We&apos;re all traveling through time together, every day of our lives.&quot;</blockquote>
+                </div>
+
+                <div class="result-block">
+                    <span class="result-label">Watch If You Liked...</span>
+                    <p id="movieLiked">Little Women, The Princess Bride, or any story that feels like a warm light in winter.</p>
+                </div>
+
+                <div class="result-block">
+                    <span class="result-label">Mood Read</span>
+                    <p id="movieMoodRead">Your current energy says you need something tender, hopeful, and quietly magical.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="app-shell">
+            <div class="form-panel">
+                <h2>Build Your Match</h2>
+                <p class="section-copy">Type however you naturally would, then use the buttons to generate a fresh recommendation.</p>
+
+                <label for="moodInput">Your mood</label>
+                <input id="moodInput" list="moodSuggestions" type="text" placeholder="sad, inspired, bored, stressed, dreamy..." value="hopeful">
+                <datalist id="moodSuggestions">
+                    <option value="sad"></option>
+                    <option value="happy"></option>
+                    <option value="inspired"></option>
+                    <option value="bored"></option>
+                    <option value="stressed"></option>
+                    <option value="heartbroken"></option>
+                    <option value="hopeful"></option>
+                    <option value="romantic"></option>
+                    <option value="lonely"></option>
+                    <option value="chaotic"></option>
+                    <option value="tired"></option>
+                    <option value="curious"></option>
+                    <option value="nostalgic"></option>
+                    <option value="motivated"></option>
+                    <option value="dreamy"></option>
+                    <option value="overwhelmed"></option>
+                    <option value="playful"></option>
+                    <option value="adrenaline"></option>
+                    <option value="tense"></option>
+                    <option value="fearless"></option>
+                    <option value="locked in"></option>
+                    <option value="on edge"></option>
+                    <option value="emotional"></option>
+                    <option value="reflective"></option>
+                    <option value="adventurous"></option>
+                </datalist>
+
+                <label for="vibeInput">Optional vibe</label>
+                <input id="vibeInput" list="vibeSuggestions" type="text" placeholder="rainy night, cozy blanket, chaotic afternoon..." value="rainy night">
+                <datalist id="vibeSuggestions">
+                    <option value="rainy night"></option>
+                    <option value="cozy blanket"></option>
+                    <option value="chaotic afternoon"></option>
+                    <option value="late-night city lights"></option>
+                    <option value="quiet Sunday"></option>
+                    <option value="girls night"></option>
+                    <option value="travel"></option>
+                    <option value="family movie night"></option>
+                    <option value="coffee shop"></option>
+                    <option value="stormy evening"></option>
+                    <option value="weekend adventure"></option>
+                    <option value="sleepover"></option>
+                    <option value="bookish night"></option>
+                    <option value="summer road trip"></option>
+                    <option value="spy night"></option>
+                    <option value="high stakes"></option>
+                    <option value="fast-paced night"></option>
+                    <option value="dark thriller"></option>
+                    <option value="plot twist night"></option>
+                    <option value="disney night"></option>
+                    <option value="family adventure"></option>
+                    <option value="magical night"></option>
+                </datalist>
+
+                <label for="detailsInput">Anything else you want tonight?</label>
+                <textarea id="detailsInput" placeholder="Need a comfort watch? Want something intense? Prefer laughs over tears?">I want something emotional but still comforting.</textarea>
+
+                <label>Explanation tone</label>
+                <div class="tone-row">
+                    <button class="tone-button active" type="button" id="poeticBtn" data-tone="poetic">Poetic</button>
+                    <button class="tone-button" type="button" id="funnyBtn" data-tone="funny">Funny</button>
+                    <button class="tone-button" type="button" id="straightBtn" data-tone="straight">Straight</button>
+                </div>
+
+                <div class="button-row" style="margin-top: 1.25rem;">
+                    <button class="submit-button" type="button" id="findBtn">Find My Movie Soul Match</button>
+                    <button class="surprise-button" type="button" id="surpriseBtn">Surprise Me</button>
+                </div>
+            </div>
+
+            <div class="mini-grid">
+                <div class="mini-card">
+                    <h3>Mood In</h3>
+                    <p id="miniMood">hopeful</p>
+                </div>
+                <div class="mini-card">
+                    <h3>Vibe In</h3>
+                    <p id="miniVibe">rainy night</p>
+                </div>
+                <div class="mini-card">
+                    <h3>Tone Mode</h3>
+                    <p id="miniTone">poetic</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <script>
+        var moviePool = [
+            {
+                title: "About Time",
+                genres: "Romance | Sci-fi | Comforting",
+                why: "It turns ordinary life into something glowing and reminds you to notice the people and moments already holding you up.",
+                quote: "\"We're all traveling through time together, every day of our lives.\"",
+                liked: "Little Women, The Time Traveler's Wife, or heartfelt stories with warmth.",
+                moodRead: "This match leans toward softness, reflection, and a little healing light.",
+                tags: ["hopeful", "sad", "reflective", "tender", "romantic", "rainy night", "cozy", "quiet", "comfort"]
+            },
+            {
+                title: "Little Women",
+                genres: "Drama | Coming-of-age | Tender",
+                why: "It wraps grief, ambition, and sisterhood into something warm enough to sit with on a complicated night.",
+                quote: "\"I want to be great or nothing.\"",
+                liked: "About Time, Pride and Prejudice, or character stories with heart.",
+                moodRead: "This pairing leans toward comfort without pretending sadness isn't in the room.",
+                tags: ["sad", "nostalgic", "lonely", "thoughtful", "hopeful", "cozy", "snowy", "quiet", "comfort"]
+            },
+            {
+                title: "Interstellar",
+                genres: "Sci-fi | Epic | Emotional",
+                why: "It turns anxiety into wonder and makes huge questions feel survivable through love, grit, and stars.",
+                quote: "\"Love is the one thing that transcends time and space.\"",
+                liked: "Arrival, The Martian, or stories that make your chest feel huge.",
+                moodRead: "Your energy wants perspective, scale, and a reminder that meaning can outlast fear.",
+                tags: ["inspired", "restless", "curious", "stressed", "dreamy", "rainy night", "cosmic", "late-night", "travel", "adventure"]
+            },
+            {
+                title: "The Princess Bride",
+                genres: "Adventure | Romance | Playful",
+                why: "It is quick, witty, and affectionate, which makes it perfect when you want delight without emotional homework.",
+                quote: "\"As you wish.\"",
+                liked: "Stardust, Shrek, or any fairy tale with a wink.",
+                moodRead: "This is a rescue mission for evenings that need levity and charm.",
+                tags: ["bored", "stressed", "silly", "romantic", "chaotic", "cozy", "sleepover", "lighthearted", "funny"]
+            },
+            {
+                title: "500 Days of Summer",
+                genres: "Romance | Indie | Bittersweet",
+                why: "It understands the ache of replaying memories and helps make sense of love that didn't stay the way you wanted.",
+                quote: "\"Just because she likes the same bizarro crap you do doesn't mean she's your soulmate.\"",
+                liked: "La La Land, Eternal Sunshine, or tender heartbreak stories.",
+                moodRead: "Your emotional weather feels reflective, maybe bruised, but still curious about what it all meant.",
+                tags: ["heartbroken", "wistful", "sad", "confused", "romantic", "rainy night", "city lights", "coffee shop", "late-night"]
+            },
+            {
+                title: "Ocean's Eleven",
+                genres: "Crime | Cool | Fast",
+                why: "When your brain wants motion and style, this glides by with enough swagger to reset the mood.",
+                quote: "\"You think we need one more? All right, we'll get one more.\"",
+                liked: "Now You See Me, Knives Out, or polished caper energy.",
+                moodRead: "You do not want heaviness tonight. You want clever people doing clever things beautifully.",
+                tags: ["bored", "chaotic", "stressed", "wired", "playful", "girls night", "party", "slick", "mystery", "smart"]
+            },
+            {
+                title: "The Sound of Music",
+                genres: "Musical | Family | Classic",
+                why: "Its warmth and songs feel like opening windows in a stuffy room and letting the day breathe again.",
+                quote: "\"When the Lord closes a door, somewhere He opens a window.\"",
+                liked: "Mary Poppins, Little Women, or classics that feel generous.",
+                moodRead: "This match points to a need for reassurance, melody, and emotional oxygen.",
+                tags: ["stressed", "sad", "hopeful", "overwhelmed", "cozy", "family", "comfort", "classic"]
+            },
+            {
+                title: "Tangled",
+                genres: "Animation | Adventure | Joyful",
+                why: "It has enough sparkle, sweetness, and momentum to lift the room without becoming shallow.",
+                quote: "\"And at last I see the light.\"",
+                liked: "Enchanted, Moana, or heart-forward animated comfort.",
+                moodRead: "This choice points to a softer kind of healing: bright, gentle, and sincere.",
+                tags: ["sad", "hopeful", "romantic", "bored", "drained", "cozy", "family", "sleepover", "comfort"]
+            },
+            {
+                title: "Moana",
+                genres: "Animation | Adventure | Disney",
+                why: "It is brave, bright, and full of forward motion, which makes it perfect when you need courage and heart at the same time.",
+                quote: "\"The call isn't out there at all, it's inside me.\"",
+                liked: "Tangled, Encanto, or adventurous Disney comfort picks.",
+                moodRead: "This pairing is for when your mood wants courage, hope, and a little ocean-sized possibility.",
+                tags: ["hopeful", "motivated", "curious", "adventure", "family", "comfort", "disney", "summer", "weekend adventure"]
+            },
+            {
+                title: "Frozen",
+                genres: "Animation | Musical | Disney",
+                why: "It mixes heart, humor, and big emotion in a way that works especially well for comfort-first movie nights.",
+                quote: "\"Some people are worth melting for.\"",
+                liked: "Tangled, The Sound of Music, or emotional Disney musicals.",
+                moodRead: "This feels right for nights that want warmth, music, and a little emotional release.",
+                tags: ["sad", "hopeful", "cozy", "family", "comfort", "snowy", "disney", "sleepover", "winter"]
+            },
+            {
+                title: "Beauty and the Beast",
+                genres: "Animation | Romance | Disney",
+                why: "It is elegant, romantic, and timeless in a way that makes quiet movie nights feel a little more magical.",
+                quote: "\"Tale as old as time.\"",
+                liked: "Pride and Prejudice, Tangled, or classic Disney romances.",
+                moodRead: "This match leans toward longing, softness, and storybook comfort.",
+                tags: ["romantic", "tender", "cozy", "classic", "family", "comfort", "disney", "candlelit", "quiet"]
+            },
+            {
+                title: "Encanto",
+                genres: "Animation | Family | Disney",
+                why: "It is colorful, emotional, and full of family feeling, making it great for nights that need warmth without losing depth.",
+                quote: "\"The miracle is not some magic that you've got. The miracle is you.\"",
+                liked: "Moana, Coco, or emotionally rich Disney movies.",
+                moodRead: "This pairing points to healing, family feeling, and a bright kind of hope.",
+                tags: ["hopeful", "family", "comfort", "colorful", "disney", "cozy", "healing", "weekend"]
+            },
+            {
+                title: "Coco",
+                genres: "Animation | Family | Disney",
+                why: "It is tender, vivid, and beautifully emotional when you want something heartfelt that still leaves you glowing.",
+                quote: "\"Never underestimate the power of music.\"",
+                liked: "Encanto, The Book of Life, or family stories with heart.",
+                moodRead: "This match feels right for reflective nights that want warmth, memory, and love.",
+                tags: ["nostalgic", "sad", "hopeful", "family", "comfort", "music", "disney", "reflective", "cozy"]
+            },
+            {
+                title: "Pirates of the Caribbean: The Curse of the Black Pearl",
+                genres: "Adventure | Fantasy | Action",
+                why: "It is funny, swashbuckling, and endlessly rewatchable when you want adventure with charisma and chaos.",
+                quote: "\"Not all treasure is silver and gold, mate.\"",
+                liked: "The Princess Bride, Indiana Jones, or charming action-adventure epics.",
+                moodRead: "This pairing is for playful, adventurous moods that want action without losing the fun.",
+                tags: ["playful", "adventure", "chaotic", "funny", "weekend adventure", "action", "pirates", "fantasy", "fearless"]
+            },
+            {
+                title: "Avatar",
+                genres: "Sci-fi | Adventure | Epic",
+                why: "It is immersive and sweeping, which makes it a strong fit when you want to disappear into a world much bigger than your own.",
+                quote: "\"I see you.\"",
+                liked: "Interstellar, Dune, or visually epic adventure stories.",
+                moodRead: "This match works for nights that want awe, wonder, and a fully cinematic escape.",
+                tags: ["dreamy", "curious", "inspired", "travel", "adventure", "epic", "cosmic", "wide-open", "action"]
+            },
+            {
+                title: "The Help",
+                genres: "Drama | Historical | Emotional",
+                why: "It is moving, character-driven, and ideal for nights when you want a story with heart, strength, and emotional weight.",
+                quote: "\"You is kind. You is smart. You is important.\"",
+                liked: "Little Women, Hidden Figures, or heartfelt ensemble dramas.",
+                moodRead: "This one fits when your mood wants warmth, resilience, and a story grounded in people.",
+                tags: ["thoughtful", "sad", "hopeful", "emotional", "family", "comfort", "historical", "quiet", "heart"]
+            },
+            {
+                title: "Ford v Ferrari",
+                genres: "Drama | Sports | Adrenaline",
+                why: "It channels pressure into motion and gives your ambition somewhere loud and satisfying to go.",
+                quote: "\"There is a point at 7,000 RPM where everything fades.\"",
+                liked: "Rush, Moneyball, or stories about obsessed excellence.",
+                moodRead: "This match says your mood wants grit, competition, and a little fire.",
+                tags: ["motivated", "restless", "frustrated", "inspired", "determined", "action", "adrenaline", "high stakes", "fast-paced night"]
+            },
+            {
+                title: "Dead Poets Society",
+                genres: "Drama | Reflective | Uplifting",
+                why: "It is the film for when your spirit needs a nudge toward courage and your heart needs language for what it already knows.",
+                quote: "\"No matter what anybody tells you, words and ideas can change the world.\"",
+                liked: "Good Will Hunting, The Holdovers, or bittersweet teacher stories.",
+                moodRead: "This pairing suggests you're craving meaning more than spectacle.",
+                tags: ["inspired", "thoughtful", "melancholy", "quiet", "bookish", "hopeful", "school", "reflective", "heart"]
+            },
+            {
+                title: "La La Land",
+                genres: "Romance | Musical | Dreamy",
+                why: "It fits nights when you want beauty, longing, and ambition all dancing together in the same frame.",
+                quote: "\"Here's to the fools who dream.\"",
+                liked: "500 Days of Summer, Moulin Rouge!, or bittersweet love stories.",
+                moodRead: "This mood wants something glamorous, aching, and a little starry-eyed.",
+                tags: ["romantic", "wistful", "inspired", "sad", "dreamy", "city lights", "late-night", "rainy night", "love"]
+            },
+            {
+                title: "Legally Blonde",
+                genres: "Comedy | Bright | Empowering",
+                why: "It is upbeat, confident, and impossible to leave without feeling at least a little more powerful.",
+                quote: "\"What, like it's hard?\"",
+                liked: "The Devil Wears Prada, Clueless, or witty confidence-boosters.",
+                moodRead: "Your energy wants momentum, sparkle, and a reminder that charm can be a superpower.",
+                tags: ["sad", "bored", "motivated", "happy", "frustrated", "girls night", "lighthearted", "fun", "confidence", "funny"]
+            },
+            {
+                title: "Knives Out",
+                genres: "Mystery | Comedy | Smart",
+                why: "It is a clever reset for nights when you want to be entertained by sharp writing and delicious chaos.",
+                quote: "\"The game is afoot.\"",
+                liked: "Ocean's Eleven, Clue, or ensemble mysteries with style.",
+                moodRead: "This is for when your brain wants a puzzle, not a lullaby.",
+                tags: ["curious", "bored", "playful", "chaotic", "wired", "cozy", "stormy", "family", "weekend", "mystery", "smart", "puzzle"]
+            },
+            {
+                title: "Pride and Prejudice",
+                genres: "Romance | Period drama | Elegant",
+                why: "It gives you yearning, wit, and emotional payoff with the kind of grace that makes a quiet night feel luxurious.",
+                quote: "\"You have bewitched me, body and soul.\"",
+                liked: "Little Women, Emma, or stories built on yearning and restraint.",
+                moodRead: "This choice leans toward slow-burn feeling, tenderness, and beautiful emotional payoff.",
+                tags: ["romantic", "tender", "lonely", "thoughtful", "hopeful", "rainy night", "cozy", "candlelit", "quiet", "classic", "bookish"]
+            },
+            {
+                title: "The Devil Wears Prada",
+                genres: "Comedy-drama | Sharp | Stylish",
+                why: "It is brisk, glossy, and funny in a way that can turn stress into confidence for a couple of hours.",
+                quote: "\"By all means, move at a glacial pace. You know how that thrills me.\"",
+                liked: "Legally Blonde, Ocean's Eleven, or fashionably chaotic comfort watches.",
+                moodRead: "This feels like a night for energy, wit, and a little attitude.",
+                tags: ["bored", "frustrated", "motivated", "stressed", "playful", "city lights", "girls night", "slick", "chaotic", "confidence", "funny"]
+            },
+            {
+                title: "The Secret Life of Walter Mitty",
+                genres: "Adventure | Reflective | Uplifting",
+                why: "It nudges you out of your own head and back toward wonder, motion, and possibility.",
+                quote: "\"To see the world... that is the purpose of life.\"",
+                liked: "Dead Poets Society, About Time, or gentle self-discovery stories.",
+                moodRead: "This match points to a need for perspective, motion, and a little courage.",
+                tags: ["stuck", "inspired", "restless", "hopeful", "thoughtful", "wide-open", "quiet", "dreamy", "weekend", "travel", "adventure"]
+            },
+            {
+                title: "Juno",
+                genres: "Comedy-drama | Indie | Tender",
+                why: "It meets uncertainty with wit and warmth, which makes it ideal for emotionally strange but survivable days.",
+                quote: "\"I was just dealing with things the way they came along.\"",
+                liked: "Little Miss Sunshine, Lady Bird, or quirky heartfelt stories.",
+                moodRead: "This mood wants honesty, humor, and a little tenderness around the edges.",
+                tags: ["awkward", "thoughtful", "lonely", "hopeful", "messy", "indie", "quiet", "autumn", "weeknight", "cozy"]
+            },
+            {
+                title: "Mamma Mia!",
+                genres: "Musical | Comedy | Feel-good",
+                why: "It is sun-soaked, goofy, and full of enough joy to pull a tired day into brighter territory.",
+                quote: "\"The winner takes it all.\"",
+                liked: "The Sound of Music, La La Land, or high-energy comfort musicals.",
+                moodRead: "Your mood looks like it could use sunshine, music, and zero emotional subtlety.",
+                tags: ["happy", "stressed", "bored", "playful", "hopeful", "summer", "girls night", "party", "weekend", "fun"]
+            },
+            {
+                title: "Harry Potter and the Sorcerer's Stone",
+                genres: "Fantasy | Adventure | Cozy",
+                why: "It feels like stepping into a world that is magical, comforting, and still full of possibility.",
+                quote: "\"It does not do to dwell on dreams and forget to live.\"",
+                liked: "Tangled, The Princess Bride, or nostalgic fantasy comfort watches.",
+                moodRead: "This match is for when you want wonder, warmth, and a little childhood magic.",
+                tags: ["nostalgic", "curious", "hopeful", "lonely", "cozy", "snowy", "family", "comfort", "magic", "school"]
+            },
+            {
+                title: "Lady Bird",
+                genres: "Coming-of-age | Drama | Sharp",
+                why: "It is funny, painfully honest, and perfect for days when your feelings are messy but very real.",
+                quote: "\"I want you to be the very best version of yourself that you can be.\"",
+                liked: "Juno, Little Women, or smart coming-of-age stories.",
+                moodRead: "This feels like a fit for restless growing pains and thoughtful chaos.",
+                tags: ["awkward", "nostalgic", "frustrated", "thoughtful", "messy", "indie", "autumn", "weeknight", "family"]
+            },
+            {
+                title: "Crazy Rich Asians",
+                genres: "Romance | Comedy | Glamorous",
+                why: "It brings sparkle, humor, and swoony energy when you want romance that feels big and fun.",
+                quote: "\"It's not my job to make you feel like a man. I can't make you something you're not.\"",
+                liked: "The Devil Wears Prada, La La Land, or stylish romantic crowd-pleasers.",
+                moodRead: "This is a strong match for nights that want glamour, chemistry, and a little emotional fire.",
+                tags: ["romantic", "happy", "playful", "hopeful", "city lights", "party", "girls night", "weekend", "love", "fun"]
+            },
+            {
+                title: "The Holiday",
+                genres: "Romance | Comedy | Cozy",
+                why: "It is warm, charming, and built for evenings when you want comfort, flirtation, and emotional softness.",
+                quote: "\"You're supposed to be the leading lady of your own life.\"",
+                liked: "About Time, Little Women, or cozy romance comfort picks.",
+                moodRead: "This pairing leans toward healing, warmth, and a little romantic hope.",
+                tags: ["heartbroken", "hopeful", "romantic", "tired", "cozy", "snowy", "quiet", "comfort", "winter", "candlelit"]
+            },
+            {
+                title: "Mission: Impossible - Fallout",
+                genres: "Action | Spy | Thriller",
+                why: "It is relentless, sharp, and full of high-stakes momentum when you want a movie that never really lets you sit back.",
+                quote: "\"Your mission, should you choose to accept it...\"",
+                liked: "Skyfall, Jason Bourne, or sleek adrenaline-heavy action.",
+                moodRead: "This match is for when your night wants velocity, danger, and impossible competence.",
+                tags: ["adrenaline", "fearless", "locked in", "tense", "stressed", "spy night", "high stakes", "fast-paced night", "action", "thriller"]
+            },
+            {
+                title: "The Dark Knight",
+                genres: "Action | Crime | Thriller",
+                why: "It is intense, morally charged, and ideal for moods that want something big, dark, and impossibly gripping.",
+                quote: "\"Why so serious?\"",
+                liked: "Inception, Skyfall, or brooding high-stakes blockbusters.",
+                moodRead: "This one fits when you want pressure, chaos, and a movie that fully commits to its own gravity.",
+                tags: ["tense", "on edge", "chaotic", "serious", "dark thriller", "high stakes", "city lights", "action", "thriller", "crime"]
+            },
+            {
+                title: "Mad Max: Fury Road",
+                genres: "Action | Adventure | Survival",
+                why: "It is pure motion, pure style, and perfect for nights when your energy wants something explosive and unforgettable.",
+                quote: "\"What a lovely day!\"",
+                liked: "John Wick, Dune, or visually intense action epics.",
+                moodRead: "This match says your mood wants speed, grit, and maximum momentum.",
+                tags: ["adrenaline", "chaotic", "restless", "fearless", "fast-paced night", "weekend adventure", "action", "survival", "high stakes"]
+            },
+            {
+                title: "John Wick",
+                genres: "Action | Thriller | Revenge",
+                why: "It is clean, stylish, and laser-focused, which makes it a strong fit for locked-in, no-nonsense moods.",
+                quote: "\"People keep asking if I'm back. Yeah, I'm thinking I'm back.\"",
+                liked: "Nobody, Atomic Blonde, or elegant action revenge stories.",
+                moodRead: "This one is for when you want something fierce, controlled, and impossible to look away from.",
+                tags: ["adrenaline", "locked in", "angry", "frustrated", "dark thriller", "fast-paced night", "action", "thriller", "revenge"]
+            },
+            {
+                title: "Gone Girl",
+                genres: "Thriller | Mystery | Dark",
+                why: "It is chilly, twisty, and ideal for nights when you want tension, sharp edges, and a story that keeps shifting under your feet.",
+                quote: "\"Amazing fuckin' Amy.\"",
+                liked: "Prisoners, Nightcrawler, or sleek psychological thrillers.",
+                moodRead: "This pairing points to a mood that wants suspense, danger, and a little emotional poison.",
+                tags: ["on edge", "tense", "curious", "dark thriller", "plot twist night", "mystery", "thriller", "psychological", "late-night"]
+            },
+            {
+                title: "Prisoners",
+                genres: "Thriller | Mystery | Crime",
+                why: "It is heavy, absorbing, and built for nights when you want real tension and a story that doesn't let go.",
+                quote: "\"Pray for the best. Prepare for the worst.\"",
+                liked: "Gone Girl, Zodiac, or morally intense thrillers.",
+                moodRead: "This match is for when your brain wants suspense with teeth.",
+                tags: ["tense", "on edge", "curious", "dark thriller", "stormy evening", "plot twist night", "thriller", "crime", "mystery"]
+            },
+            {
+                title: "Skyfall",
+                genres: "Action | Spy | Thriller",
+                why: "It balances action and elegance beautifully, making it a great fit for nights that want danger with polish.",
+                quote: "\"Sometimes the old ways are the best.\"",
+                liked: "Mission: Impossible - Fallout, Casino Royale, or sleek spy thrillers.",
+                moodRead: "This mood wants sophistication, risk, and a little cinematic danger.",
+                tags: ["adrenaline", "tense", "fearless", "spy night", "high stakes", "city lights", "action", "thriller", "slick"]
+            },
+            {
+                title: "Inception",
+                genres: "Sci-fi | Action | Thriller",
+                why: "It is cerebral, intense, and perfect when you want your action with a side of puzzles and dream logic.",
+                quote: "\"You mustn't be afraid to dream a little bigger, darling.\"",
+                liked: "Interstellar, The Dark Knight, or concept-driven thrill rides.",
+                moodRead: "This is a strong fit for restless, curious nights that want spectacle and brainpower together.",
+                tags: ["curious", "dreamy", "locked in", "smart", "puzzle", "plot twist night", "action", "thriller", "late-night"]
+            },
+            {
+                title: "A Quiet Place",
+                genres: "Thriller | Horror | Survival",
+                why: "It turns silence into suspense and works beautifully when you want a thriller that feels immediate and intimate.",
+                quote: "\"Who are we if we can't protect them?\"",
+                liked: "10 Cloverfield Lane, Signs, or tension-heavy survival stories.",
+                moodRead: "This pairing leans toward focused tension and the kind of suspense that tightens every muscle.",
+                tags: ["on edge", "tense", "quiet", "dark thriller", "stormy evening", "survival", "thriller", "high stakes"]
+            }
+        ];
+
+        var selectedTone = "poetic";
+        var lastMovieTitle = "";
+
+        function byId(id) {
+            return document.getElementById(id);
+        }
+
+        function normalizedInput() {
+            var mood = byId("moodInput").value || "";
+            var vibe = byId("vibeInput").value || "";
+            var details = byId("detailsInput").value || "";
+            return (mood + " " + vibe + " " + details).toLowerCase();
+        }
+
+        function scoreMovie(movie, inputText) {
+            var score = 0;
+            var i;
+
+            for (i = 0; i < movie.tags.length; i += 1) {
+                if (inputText.indexOf(movie.tags[i]) !== -1) {
+                    score += 3;
+                }
+            }
+
+            if (score === 0) {
+                score = 1;
+            }
+
+            return score;
+        }
+
+        function rewriteWhy(movie, mood, vibe) {
+            var moodText = mood || "whatever you are feeling";
+            var vibeText = vibe || "the vibe you brought tonight";
+
+            if (selectedTone === "funny") {
+                return "You said " + moodText + " with a " + vibeText + " vibe, so this movie raised its hand like it knew the assignment. " + movie.why + " It is giving excellent taste with a side of dramatic flair.";
+            }
+
+            if (selectedTone === "straight") {
+                return "Because you said you are feeling " + moodText + (vibe ? " with a " + vibeText : "") + " vibe, this movie fits well. " + movie.why;
+            }
+
+            return "You arrived feeling " + moodText + ", wrapped in " + vibeText + ", and this story answers that atmosphere beautifully. " + movie.why;
+        }
+
+        function rewriteMoodRead(baseText) {
+            if (selectedTone === "funny") {
+                return baseText + " Translation: your brain wants better taste than random scrolling.";
+            }
+
+            if (selectedTone === "straight") {
+                return baseText;
+            }
+
+            return baseText + " Think of it as an emotional weather report with better lighting.";
+        }
+
+        function renderMovie(movie) {
+            var mood = byId("moodInput").value.trim();
+            var vibe = byId("vibeInput").value.trim();
+
+            byId("movieTitle").textContent = movie.title;
+            byId("movieMeta").textContent = movie.genres;
+            byId("movieWhy").textContent = rewriteWhy(movie, mood, vibe);
+            byId("movieQuote").textContent = movie.quote;
+            byId("movieLiked").textContent = movie.liked;
+            byId("movieMoodRead").textContent = rewriteMoodRead(movie.moodRead);
+            byId("miniMood").textContent = mood || "open to anything";
+            byId("miniVibe").textContent = vibe || "no vibe selected";
+            byId("miniTone").textContent = selectedTone;
+            lastMovieTitle = movie.title;
+        }
+
+        function chooseMovie() {
+            var inputText = normalizedInput();
+            var topScore = -1;
+            var matches = [];
+            var i;
+            var movie;
+            var score;
+
+            for (i = 0; i < moviePool.length; i += 1) {
+                movie = moviePool[i];
+                score = scoreMovie(movie, inputText);
+
+                if (score > topScore) {
+                    topScore = score;
+                    matches = [movie];
+                } else if (score === topScore) {
+                    matches.push(movie);
+                }
+            }
+
+            if (matches.length > 1) {
+                matches = matches.filter(function (item) {
+                    return item.title !== lastMovieTitle;
+                });
+            }
+
+            if (matches.length === 0) {
+                matches = moviePool.slice(0);
+            }
+
+            renderMovie(matches[Math.floor(Math.random() * matches.length)]);
+        }
+
+        function surpriseMe() {
+            var moods = ["sad", "inspired", "bored", "stressed", "hopeful", "heartbroken", "romantic", "curious", "nostalgic", "motivated", "dreamy", "playful", "adrenaline", "tense", "fearless", "locked in", "on edge"];
+            var vibes = ["rainy night", "cozy blanket", "city lights", "girls night", "quiet Sunday", "chaotic afternoon", "coffee shop", "stormy evening", "weekend adventure", "sleepover", "bookish night", "summer road trip", "spy night", "high stakes", "fast-paced night", "dark thriller", "plot twist night"];
+            var details = ["I want something funny.", "I want comfort.", "Give me romance.", "I want something smart.", "I need a confidence boost.", "I want a nostalgic movie night.", "Give me something adventurous.", "I want something dreamy and emotional.", "Give me a thriller.", "I want action and high stakes.", "I want plot twists.", "Give me something intense."];
+
+            byId("moodInput").value = moods[Math.floor(Math.random() * moods.length)];
+            byId("vibeInput").value = vibes[Math.floor(Math.random() * vibes.length)];
+            byId("detailsInput").value = details[Math.floor(Math.random() * details.length)];
+            chooseMovie();
+        }
+
+        function setTone(tone) {
+            var buttons = document.querySelectorAll(".tone-button");
+            var i;
+
+            selectedTone = tone;
+
+            for (i = 0; i < buttons.length; i += 1) {
+                if (buttons[i].getAttribute("data-tone") === tone) {
+                    buttons[i].classList.add("active");
+                } else {
+                    buttons[i].classList.remove("active");
+                }
+            }
+
+            if (byId("movieTitle").textContent) {
+                chooseMovie();
+            }
+        }
+
+        window.chooseMovie = chooseMovie;
+        window.surpriseMe = surpriseMe;
+        window.setTone = setTone;
+
+        document.addEventListener("DOMContentLoaded", function () {
+            byId("findBtn").onclick = chooseMovie;
+            byId("surpriseBtn").onclick = surpriseMe;
+            byId("poeticBtn").onclick = function () { setTone("poetic"); };
+            byId("funnyBtn").onclick = function () { setTone("funny"); };
+            byId("straightBtn").onclick = function () { setTone("straight"); };
+            chooseMovie();
+        });
+    </script>
+</body>
+</html>
